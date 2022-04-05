@@ -1,12 +1,6 @@
-// BEFORE RUNNING:
-// ---------------
-// 1. If not already done, enable the Google Sheets API
-//    and check the quota for your project at
-//    https://console.developers.google.com/apis/api/sheets
-// 2. Install the Node.js client library by running
-//    `npm install googleapis --save`
 const {google} = require('googleapis');
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/iam'];
+const {BigQuery} = require('@google-cloud/bigquery');
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/iam','https://www.googleapis.com/auth/bigquery.readonly'];
 const KEYFILEPATH = './credentials.json';
 const gal = require('google-auth-library');
 const auth = new gal.GoogleAuth({
@@ -21,33 +15,75 @@ const {
     //getSpreadSheetValues
   } = require('./googleSheetsService.js');
 
+ 
 
 async function main () {
-  const authClient = await generateAccessToken();
-  //const sheet = getSpreadSheet({spreadsheetId, authClient})
-  const spreadsheetId = "14F6fmnBnuB9YtlFfWA9SVyebjyl7emnsovuUUQTktok";
+  async function queryBigQuery() {
+    // Queries a public Shakespeare dataset.
+
+        // Create a client
+        const bigqueryClient = new BigQuery();
+
+        // The SQL query to run
+        const sqlQuery = `SELECT tag.description FROM \`nodejsprototype.topset.toptable\` WHERE tag.description = "FA-7403 LIPEÄSÄILIÖ"`;
+
+        const options = {
+        query: sqlQuery,
+        // Location must match that of the dataset(s) referenced in the query.
+        //location: 'US',
+        //params: {corpus: 'romeoandjuliet', min_word_count: 250},
+        };
+
+        // Run the query
+        const [rows] = await bigqueryClient.query(options);
+
+        console.log('Rows:');
+        rows.forEach(row => console.log(row));
+    }
+
+  queryBigQuery();
+  
+  const bigqUpdate = {
+    spreadsheetId: spreadsheetId,
+    auth: authClient,
+    
+    resource : {
+      requests: [{
+      "addDataSource":{
+      "dataSource":{
+         "spec":{
+            "bigQuery":{
+               "projectId":"nodejsprototype",
+               "tableSpec":{
+                  "tableProjectId":"nodejsprototype",
+                  "datasetId":"topset",
+                  "tableId":"toptable"
+               }
+            }
+         }
+      }
+    } }]
+  }
+  };
 
   const sheetUpdate = {
         spreadsheetId: spreadsheetId,
         auth: authClient,
         valueInputOption: "RAW",
-        range: 'nodejsprotosheet!A2:A3',
-
+        range: 'nodejsprotosheet!A2:B2',   
         resource: { 
             values: [
-            ["Item"],
-            ["Wheel"]
+            ["Item", "Wheel"]
         ]},
        
         };
-   
-  try {
-    const response = (await sheets.spreadsheets.values.update(sheetUpdate, spreadsheetId)).data;
-    // TODO: Change code below to process the `response` object:
-    console.log(JSON.stringify(response, null, 2));
-  } catch (err) {
-    console.error(err);
-  }
+
+  //try {
+  //  const response = (await sheets.spreadsheets.values.update(sheetUpdate, spreadsheetId)).data;
+  //  console.log(JSON.stringify(response, null, 2));
+ // } catch (err) {
+  //  console.error(err);
+ // }
 }
 
 main();
