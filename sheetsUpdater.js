@@ -24,30 +24,60 @@ async function main () {
         const options = {
         query: sqlQuery
         };
+        const options2 = {
+          query: sqlQuery2
+          };
       
         // Run the query
         const rows = await bigqueryClient.query(options);
-        //const rows2 = await bigqueryClient.query(options2);
-        //console.log(rows[0][0].f0_._field_1);
+        const rows2 = await bigqueryClient.query(options2);
+        const percent = (0.01*rows[0][0].f0_._field_1)*30;
+        const percent2 = (0.01*rows2[0][0].f0_._field_1)*60;
+        const updatetime = new Date();
+        const dateformat = updatetime.getDate() + "."
+        + (updatetime.getMonth()+1)  + "." 
+        + updatetime.getFullYear() + " klo "  
+        + updatetime.getHours() + ":"  
+        + updatetime.getMinutes() + ":" 
+        + updatetime.getSeconds();
+        //console.log(percent.toFixed(2));
         const sheetUpdate = {
           spreadsheetId: spreadsheetId,
           auth: auth,
           valueInputOption: "RAW",
-          range: 'nodejsprotosheet!A2:B2',   
+          range: 'nodejsprotosheet!A2:B3',   
           resource: { 
               values: [
-              [rows[0][0].f0_._field_2.description, rows[0][0].f0_._field_1]
+              [rows[0][0].f0_._field_2.description, percent],
+              [rows2[0][0].f0_._field_2.description, percent2]
           ]},
          
           };
   
       try {
-        //const response = (await sheets.spreadsheets.values.update(sheetUpdate, spreadsheetId)).data;
+        const response = (await sheets.spreadsheets.values.update(sheetUpdate, spreadsheetId)).data;
         //console.log(JSON.stringify(response, null, 2));
       } catch (err) {
         //console.error(err);
       }
+      const updateTime = {
+        spreadsheetId: spreadsheetId,
+        auth: auth,
+        valueInputOption: "RAW",
+        range: 'nodejsprotosheet!B7',   
+        resource: { 
+            values: [
+            [dateformat]
+        ]},
+       
+        };
 
+    try {
+      const response = (await sheets.spreadsheets.values.update(updateTime, spreadsheetId)).data;
+      //console.log(JSON.stringify(response, null, 2));
+    } catch (err) {
+      //console.error(err);
+    }
         const request = {
           auth: auth,
           // The spreadsheet to apply the updates to.
@@ -63,7 +93,7 @@ async function main () {
                   "addChart": {
                     "chart": {
                       "spec": {
-                        "title": "Säiliön 1 täyttötilanne",
+                        "title": "Säiliöiden täyttötilanne",
                         "basicChart": {
                           "chartType": "COLUMN",
                           "legendPosition": "BOTTOM_LEGEND",
@@ -84,10 +114,7 @@ async function main () {
                                   "sources": [
                                     {
                                       "sheetId": 0,
-                                      "startRowIndex": 1,
-                                      "endRowIndex": 2,
-                                      "startColumnIndex": 0,
-                                      "endColumnIndex": 2
+                                      "startRowIndex": 0, "endRowIndex": 3, "startColumnIndex": 0, "endColumnIndex": 1
                                     }
                                   ]
                                 }
@@ -95,22 +122,22 @@ async function main () {
                             }
                           ],
                           "series": [
+                            
                             {
                               "series": {
                                 "sourceRange": {
                                   "sources": [
                                     {
                                       "sheetId": 0,
-                                      "startRowIndex": 1,
-                                      "endRowIndex": 2,
-                                      "startColumnIndex": 0,
-                                      "endColumnIndex": 2
+                                      "startRowIndex": 0, "endRowIndex": 3, "startColumnIndex": 1, "endColumnIndex": 2
                                     }
                                   ]
                                 }
                               },
-                              "targetAxis": "LEFT_AXIS"
-                            },
+                              "targetAxis": "LEFT_AXIS",}
+                              
+                            
+                            
                           ],
                           "headerCount": 1
                         }
@@ -119,7 +146,7 @@ async function main () {
                         "overlayPosition": {
                           "anchorCell": {
                             "sheetId": 0,
-                            "rowIndex": 4,
+                            "rowIndex": 32,
                             "columnIndex": 0
                           },
                           "offsetXPixels": 50,
@@ -136,7 +163,7 @@ async function main () {
         };
         try {
           const response = (await sheets.spreadsheets.batchUpdate(request, spreadsheetId )).data;
-          console.log(JSON.stringify(response, null, 2));
+          //console.log(JSON.stringify(response, null, 2));
         } catch (err) {
           console.error(err);
         }
