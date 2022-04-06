@@ -4,7 +4,7 @@ const {google} = require('googleapis');
 const gal = require('google-auth-library');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/iam', 'https://www.googleapis.com/auth/bigquery.readonly'];
 const KEYFILEPATH = './credentials.json';
-
+const spreadsheetId = "14F6fmnBnuB9YtlFfWA9SVyebjyl7emnsovuUUQTktok";
 
 const auth = new gal.GoogleAuth({
     scopes: SCOPES,
